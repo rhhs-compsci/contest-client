@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.Arrays;
 
 public class Client {
 	public static void main(String[] args){
@@ -21,16 +22,17 @@ public class Client {
 			bis.close();
 			
 			OutputStream socket_output = socket.getOutputStream();
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket_output));
-			writer.write(user_name+"\n");
-			writer.write(problem_name+"\n");
-			writer.write(String.valueOf(file_array.length)+"\n");
-			writer.write(file_name+ "\n");
-			/*socket_output.write(user_name.getBytes());
-			socket_output.write(problem_name.getBytes());
-			socket_output.write(file_array.length);
-			socket_output.write(file_name.getBytes());*/
-			writer.flush();
+//			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket_output));
+//			writer.write(user_name+"\n");
+//			writer.write(problem_name+"\n");
+//			writer.write(String.valueOf(file_array.length)+"\n");
+//			writer.write(file_name+ "\n");
+//			writer.flush();
+//			writer.close();
+			socket_output.write((user_name + "\n").getBytes());
+			socket_output.write((problem_name + "\n").getBytes());
+			socket_output.write((String.valueOf(file_array.length) + "\n").getBytes());
+			socket_output.write((file_name + "\n").getBytes());
 			socket_output.write(file_array);
 			socket_output.flush();
 			try {
