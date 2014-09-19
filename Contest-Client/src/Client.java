@@ -31,21 +31,15 @@ public class Client {
 //			writer.close();
 			socket_output.write((user_name + "\n").getBytes());
 			socket_output.write((problem_name + "\n").getBytes());
-			socket_output.write((String.valueOf(file_array.length) + "\n").getBytes());
 			socket_output.write((file_name + "\n").getBytes());
+			socket_output.write((String.valueOf(file_array.length) + "\n").getBytes());
 			socket_output.write(file_array);
 			socket_output.flush();
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			
 			InputStream socket_input = socket.getInputStream();
-			BufferedReader sir = new BufferedReader(new InputStreamReader(socket_input));
-			String line;
-			while((line = sir.readLine())!=null)
-				System.out.println(sir.readLine());
+			char next = 0;
+			while((next = (char)socket_input.read())!='\u0004')
+				System.out.print(next);
 			
 			socket.close();
 		} catch (UnknownHostException e) {
