@@ -7,12 +7,14 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -24,50 +26,8 @@ import javax.swing.border.EmptyBorder;
 
 public class Client {
 	public static void main(String[] args){
-		try{
-			BufferedReader br = new BufferedReader(new FileReader("config"));
-			String server_host = br.readLine();
-			String user_name = br.readLine();
-			br.close();
-			
-			Gui gui = new Gui();
-			gui.ipField.setText(server_host);
-			gui.usernameField.setText(user_name);
-			gui.setVisible(true);
-			
-			while (gui.isVisible()) System.out.print("\0"); // super hacky, only works when debugging or printing for some reason
-			server_host = gui.ipField.getText();
-			user_name = gui.usernameField.getText();
-			String problem_name = gui.probNameField.getText();
-			
-			Socket socket = new Socket(server_host, 63400);
-			
-			File file = new File(gui.filename);
-			byte[] file_array = new byte [(int)file.length()];
-			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
-			bis.read(file_array, 0, file_array.length);
-			bis.close();
-			
-			OutputStream socket_output = socket.getOutputStream();
-			
-			socket_output.write((user_name + "\n").getBytes());
-			socket_output.write((problem_name + "\n").getBytes());
-			socket_output.write((file.getName() + "\n").getBytes());
-			socket_output.write((String.valueOf(file_array.length) + "\n").getBytes());
-			socket_output.write(file_array);
-			socket_output.flush();
-			
-			InputStream socket_input = socket.getInputStream();
-			char next = 0;
-			while((next = (char)socket_input.read())!='\u0004')
-				System.out.print(next);
-			
-			socket.close();
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		Gui gui = new Gui();
+		gui.setVisible(true);
 	}
 }
 class Gui extends JFrame
@@ -78,11 +38,6 @@ class Gui extends JFrame
 	public JTextField probNameField;
 	public JLabel lblCurFile;
 	public String filename = "";
-	
-	public void close()
-	{
-		this.setVisible(false);
-	}
 	
 	public Gui()
 	{
@@ -164,6 +119,19 @@ class Gui extends JFrame
 		gbc_lblCurFile.gridy = 6;
 		contentPane.add(lblCurFile, gbc_lblCurFile);
 		
+		BufferedReader br;
+		try
+		{
+			br = new BufferedReader(new FileReader("config"));
+			ipField.setText(br.readLine());
+			usernameField.setText(br.readLine());
+			br.close();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
 		final JFileChooser fc = new JFileChooser();
 		
 		JButton btnBrowse = new JButton("Browse...");
@@ -200,8 +168,42 @@ class Gui extends JFrame
 			public void mouseClicked(MouseEvent e)
 			{
 				if (!fc.isShowing()) {
-					close();
+					String host = ipField.getText();
+					String username = usernameField.getText();
+					String problem_name = probNameField.getText();
+					
+					try {
+						Socket socket = new Socket(host, 63400);
+						
+						File file = new File(filename);
+						byte[] file_array = new byte [(int)file.length()];
+						BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+						bis.read(file_array, 0, file_array.length);
+						bis.close();
+						
+						OutputStream socket_output = socket.getOutputStream();
+						
+						socket_output.write((username + "\n").getBytes());
+						socket_output.write((problem_name + "\n").getBytes());
+						socket_output.write((file.getName() + "\n").getBytes());
+						socket_output.write((String.valueOf(file_array.length) + "\n").getBytes());
+						socket_output.write(file_array);
+						socket_output.flush();
+						
+						InputStream socket_input = socket.getInputStream();
+						char next = 0;
+						while((next = (char)socket_input.read())!='\u0004')
+							System.out.print(next);
+						
+						socket.close();
+					}
+					catch (Exception e1)
+					{
+						e1.printStackTrace();
+					}
 				}
+				setVisible(false);
+				dispose();
 			}
 			@Override
 			public void mousePressed(MouseEvent e) {}
